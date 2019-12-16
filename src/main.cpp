@@ -1,0 +1,178 @@
+using namespace std;
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <InfluxDb.h>
+#include <SoftwareSerial.h>
+#include <PMS.h>
+#include <FastLED.h>
+#include <vector>
+
+vector<unsigned int> v1;      // for average
+vector<unsigned int> v25;      // for average
+vector<unsigned int> v10;      // for average
+unsigned int apm1 = 0;        // last PM10 average
+unsigned int apm25 = 0;        // last PM2.5 average
+unsigned int apm10 = 0;        // last PM10 average
+vector<unsigned int> vmic;      // for average
+unsigned int amic = 0;        // last PM10 average
+
+// #define _TASK_TIMECRITICAL      // Enable monitoring scheduling overruns
+#define _TASK_SLEEP_ON_IDLE_RUN // Enable 1 ms SLEEP_IDLE powerdowns between tasks if no callback methods were invoked during the pass
+#define _TASK_STATUS_REQUEST    // Compile with support for StatusRequest functionality - triggering tasks on status change events in addition to time only
+#define _TASK_WDT_IDS           // Compile with support for wdt control points and task ids
+#define _TASK_LTS_POINTER       // Compile with support for local task storage pointer
+#define _TASK_PRIORITY          // Support for layered scheduling priority
+// #define _TASK_MICRO_RES         // Support for microsecond resolution
+// #define _TASK_STD_FUNCTION      // Support for std::function (ESP8266 and ESP32 ONLY)
+#define _TASK_DEBUG             // Make all methods and variables public for debug purposes
+#define _TASK_INLINE       // Make all methods "inline" - needed to support some multi-tab, multi-file implementations
+#define _TASK_TIMEOUT           // Support for overall task timeout
+
+#include <TaskScheduler.h>
+
+const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+unsigned int sample;
+
+#define P_TOWER_RX D2
+#define P_TOWER_TX 6
+
+#define LED_PIN D6
+#define LED_TYPE WS2812B
+#define COLOR_ORDER GRB
+#define NUM_LEDS 1
+
+// Plantower
+SoftwareSerial plantower_serial(P_TOWER_RX, P_TOWER_TX);
+PMS pms(plantower_serial);
+PMS::DATA data;
+
+CRGB leds[NUM_LEDS];
+int BRIGHTNESS = 20; // this is half brightness
+
+/***
+ * Average methods
+ **/
+
+void saveDataForAverage(unsigned int pm25, unsigned int pm10, unsigned int pm1){
+  v1.push_back(pm1);
+  v25.push_back(pm25);
+  v10.push_back(pm10);
+}
+
+void saveMicDataForAverage(unsigned int mic){
+  vmic.push_back(mic);
+}
+
+
+unsigned int getPM1Average(){
+  unsigned int pm1_average = accumulate( v1.begin(), v1.end(), 0.0)/v1.size();
+  v1.clear();
+  return pm1_average;
+}
+
+unsigned int getPM25Average(){
+  unsigned int pm25_average = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
+  v25.clear();
+  return pm25_average;
+}
+
+unsigned int getPM10Average(){
+  unsigned int pm10_average = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
+  v10.clear();
+  return pm10_average;
+}
+
+unsigned int getMicAverage() {
+  unsigned int mic_average = accumulate( vmic.begin(), vmic.end(), 0.0)/vmic.size();
+  vmic.clear();
+  return mic_average;
+}
+void averageLoop(){
+  apm25 = getPM25Average();  // global var for display
+  apm10 = getPM10Average();
+  apm1 = getPM1Average();
+}
+
+void micAverageLoop(){
+  amic = getMicAverage();  // global var for display
+}
+
+Scheduler runner;
+
+// CALLBACKS
+void printMicAverage() {
+  micAverageLoop();
+  // Serial.print("Mic average "); 
+  Serial.print(","); Serial.print(amic);
+}
+
+void printPMAverage() {
+  averageLoop();
+  // Serial.print("PM 1.0 (ug/m3): ");    Serial.println(apm1);
+  // Serial.print("PM 2.5 (ug/m3): ");    Serial.println(apm25);
+  // Serial.print("PM 10.0 (ug/m3): ");   Serial.println(apm10);
+}
+void readPlantowerData() {
+  // Serial.println("Leyendo PM ... ");
+  if (pms.readUntil(data)) {
+    saveDataForAverage(data.PM_AE_UG_2_5, data.PM_AE_UG_10_0, data.PM_AE_UG_1_0);
+  }
+  else Serial.println("No data.");
+}
+
+void readMicData() {
+  // Serial.print("Leyendo Mic ... ");
+  unsigned long startMillis= millis();  // Start of sample window
+  unsigned int peakToPeak = 0;   // peak-to-peak level
+
+  unsigned int signalMax = 0;
+  unsigned int signalMin = 1024;
+
+  // collect data for 50 mS
+  while (millis() - startMillis < sampleWindow)
+    {
+      sample = analogRead(0);
+      if (sample > signalMax)
+        {
+          signalMax = sample;  // save just the max levels
+        }
+      else if (sample < signalMin)
+        {
+          signalMin = sample;  // save just the min levels
+        }
+    }
+  peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
+  saveMicDataForAverage(peakToPeak);
+}
+
+// TASKS
+Task readPlantowerTask(400, TASK_FOREVER, &readPlantowerData);
+Task readMicTask(120, TASK_FOREVER, &readMicData);
+Task getPMAverage(10000, TASK_FOREVER, &printPMAverage);
+Task getMicAverageTask(2000, TASK_FOREVER, &printMicAverage);
+
+void setup() {
+  LEDS.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  plantower_serial.begin(9600);
+  pms.wakeUp();
+  Serial.begin(115200);
+  FastLED.setBrightness(BRIGHTNESS);
+
+  // setup time
+  runner.init();
+  Serial.println("Initialized scheduler");
+  runner.addTask(readPlantowerTask);
+  runner.addTask(readMicTask);
+  runner.addTask(getPMAverage);
+  runner.addTask(getMicAverageTask);
+  Serial.println("added tasks");
+  readPlantowerTask.enable();
+  readMicTask.enable();
+  getPMAverage.enable();
+  getMicAverageTask.enable();
+}
+
+void loop(){
+  runner.execute();
+}
