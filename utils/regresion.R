@@ -1,5 +1,7 @@
 rm(list=ls())
 
+## La ganancia del módulo mic-max9814 se conecta a vcc para tener la mínina, con otras ganancias se saturaba a partir de 78dbs
+
 ## https://www.szynalski.com/tone-generator/
 ## 1 -> sonido ambiente
 ## 2 -> 1%
