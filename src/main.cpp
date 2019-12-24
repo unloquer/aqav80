@@ -10,6 +10,10 @@
 #define _TASK_INLINE       // Make all methods "inline" - needed to support some multi-tab, multi-file implementations
 #define _TASK_TIMEOUT           // Support for overall task timeout
 
+#define FIXED_LAT "6.200022"
+#define FIXED_LON "-75.505357"
+#define SENSOR_ID "aqa_id"
+
 // #define DEBUGGING
 #ifdef  DEBUGGING
 #define DMSG(args...)       Serial.print(args)
@@ -39,8 +43,8 @@ using namespace std;
 #include "DHT.h"
 #include <TaskScheduler.h>
 
-#define WIFI_SSID "WIFI_NAME"
-#define WIFI_PASS "WIFI_PASSWORD"
+#define WIFI_SSID "HOME-4E05"
+#define WIFI_PASS "BDFBC14F7BC4E656"
 
 Influxdb influx(INFLUXDB_HOST);
 
@@ -116,7 +120,7 @@ unsigned int getHumidity(){
 unsigned int getTemperature(){
   return dht.readTemperature();
 }
-void averageLoop(){
+void pmAverageLoop(){
   apm25 = getPM25Average();  // global var for display
   apm10 = getPM10Average();
   apm1 = getPM1Average();
@@ -141,7 +145,7 @@ void printMicAverage() {
   DMSG(","); DMSG(amic);
 }
 void printPMAverage() {
-  averageLoop();
+  pmAverageLoop();
   DMSG("PM 1.0 (ug/m3): ");    DMSGln(apm1);
   DMSG("PM 2.5 (ug/m3): ");    DMSGln(apm25);
   DMSG("PM 10.0 (ug/m3): ");   DMSGln(apm10);
@@ -178,29 +182,22 @@ void readMicData() {
   saveMicDataForAverage(peakToPeak);
 }
 void sendToInflux() {
-  Serial.print("Write to influx \n");
-  char fields[256];
+  micAverageLoop();
+  pmAverageLoop();
+  char row[256];
+
   sprintf(
-          fields,
-          "t=%u,h=%u,pm1=%u,pm25=%u,pm10=%u,s=%u",
-          t,h,apm1,apm25,apm10,amic
+          row,
+          "%s,id=%s lat=%s,lng=%s,t=%u,h=%u,pm1=%u,pm25=%u,pm10=%u,s=%u",
+          SENSOR_ID,SENSOR_ID,FIXED_LAT,FIXED_LON,t,h,apm1,apm25,apm10,amic
           );
-  Serial.println(fields);
+  Serial.println(row);
 
-  // InfluxData row("temperature");
-  // row.addTag("device", "alpha");
-  // row.addTag("sensor", "one");
-  // row.addTag("mode", "pwm");
-  // row.addValue("loopCount", loopCount);
-  // row.addValue("value", random(10, 40));
-
-  // influx.write(row);
+  influx.write(row);
 }
 // TASKS
 Task readPlantowerTask(400, TASK_FOREVER, &readPlantowerData);
 Task readMicTask(120, TASK_FOREVER, &readMicData);
-Task getPMAverage(10000, TASK_FOREVER, &printPMAverage);
-Task getMicAverageTask(2000, TASK_FOREVER, &printMicAverage);
 Task getHTTask(15000, TASK_FOREVER, &readHTData);
 Task writeToInflux(15000, TASK_FOREVER, &sendToInflux);
 
@@ -228,15 +225,11 @@ void setup(){
   DMSGln("Initialized scheduler");
   runner.addTask(readPlantowerTask);
   runner.addTask(readMicTask);
-  runner.addTask(getPMAverage);
-  runner.addTask(getMicAverageTask);
   runner.addTask(getHTTask);
   runner.addTask(writeToInflux);
   DMSGln("added tasks");
   readPlantowerTask.enable();
   readMicTask.enable();
-  getPMAverage.enable();
-  getMicAverageTask.enable();
   getHTTask.enable();
   writeToInflux.enable();
 }
