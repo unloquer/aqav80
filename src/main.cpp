@@ -43,8 +43,8 @@ using namespace std;
 #include "DHT.h"
 #include <TaskScheduler.h>
 
-#define WIFI_SSID "HOME-4E05"
-#define WIFI_PASS "BDFBC14F7BC4E656"
+#define WIFI_SSID "WIFI_NAME"
+#define WIFI_PASS "WIFI_PASSWORD"
 
 Influxdb influx(INFLUXDB_HOST);
 
