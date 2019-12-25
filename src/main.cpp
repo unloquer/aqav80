@@ -142,6 +142,7 @@ void readHTData(){
 Scheduler runner;
 
 // CALLBACKS
+void sendToInflux();
 void printMicAverage(){
   micAverageLoop();
   DMSG("Mic average ");
@@ -184,25 +185,11 @@ void readMicData(){
   peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
   saveMicDataForAverage(peakToPeak*0.07447 + 39.82947);
 }
-void sendToInflux(){
-  micAverageLoop();
-  pmAverageLoop();
-  char row[256];
-
-  sprintf(
-          row,
-          "%s,id=%s lat=%s,lng=%s,t=%u,h=%u,pm1=%u,pm25=%u,pm10=%u,s=%u",
-          SENSOR_ID,SENSOR_ID,FIXED_LAT,FIXED_LON,t,h,apm1,apm25,apm10,amic
-          );
-  DMSGln(row);
-
-  influx.write(row);
-}
 CRGB setColor(){
   CRGB alert = CRGB::Black;
   if(apm25 < 12) alert = CRGB::Green; // CRGB::Green; // Alert.ok
   if(apm25 >= 12 && apm25 < 35) alert = CRGB::Gold; // Alert.notGood;
-  if(apm25 >= 35 && apm25 < 55) alert = CRGB::OrangeRed; // Alert.bad;
+  if(apm25 >= 35 && apm25 < 55) alert = CRGB::Tomato; // Alert.bad;
   if(apm25 >= 55 && apm25 < 150) alert = CRGB::DarkRed; // CRGB::Red; // Alert.dangerous;
   if(apm25 >= 150 && apm25 < 250) alert = CRGB::Purple; // CRGB::Purple; // Alert.VeryDangerous;
   if(apm25 >= 250) alert = CRGB::Brown; // Alert.harmful;
@@ -220,6 +207,23 @@ Task readMicTask(120, TASK_FOREVER, &readMicData);
 Task getHTTask(15000, TASK_FOREVER, &readHTData);
 Task writeToInflux(15000, TASK_FOREVER, &sendToInflux);
 Task ledBlink(1000, TASK_FOREVER, &setLed);
+// CALLBACKS
+void sendToInflux(){
+  micAverageLoop();
+  pmAverageLoop();
+  ledBlink.setInterval(map(amic, 0, 150, 1000, 400));
+  char row[256];
+
+  sprintf(
+          row,
+          "%s,id=%s lat=%s,lng=%s,t=%u,h=%u,pm1=%u,pm25=%u,pm10=%u,s=%u",
+          SENSOR_ID,SENSOR_ID,FIXED_LAT,FIXED_LON,t,h,apm1,apm25,apm10,amic
+          );
+  DMSGln(row);
+
+  influx.write(row);
+}
+
 
 void connectToWifi(){
   WiFi.begin(WIFI_SSID, WIFI_PASS);
