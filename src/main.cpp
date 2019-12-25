@@ -10,9 +10,9 @@
 #define _TASK_INLINE       // Make all methods "inline" - needed to support some multi-tab, multi-file implementations
 #define _TASK_TIMEOUT           // Support for overall task timeout
 
-#define FIXED_LAT "6.200022"
-#define FIXED_LON "-75.505357"
-#define SENSOR_ID "aqa_id"
+#define FIXED_LAT "6.263578"
+#define FIXED_LON "-75.597417"
+#define SENSOR_ID "v80_autollaves"
 
 // #define DEBUGGING
 #ifdef  DEBUGGING
@@ -59,6 +59,8 @@ unsigned int amic = 0;        // last PM10 average
 unsigned int h = 0;
 unsigned int t = 0;
 
+bool ledToggle = false;
+
 // MIC
 const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
@@ -71,12 +73,12 @@ PMS pms(plantower_serial);
 PMS::DATA data;
 
 // LED
-#define LED_PIN D6
+#define LED_PIN D1
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 #define NUM_LEDS 1
 CRGB leds[NUM_LEDS];
-int BRIGHTNESS = 20; // this is half brightness
+int BRIGHTNESS = 10; // this is half brightness
 
 // DHT
 #define DHTPIN D3
@@ -93,6 +95,7 @@ void saveDataForAverage(unsigned int pm25, unsigned int pm10, unsigned int pm1){
 }
 void saveMicDataForAverage(unsigned int mic){
   vmic.push_back(mic);
+  // Serial.print(","); Serial.print(mic);
 }
 unsigned int getPM1Average(){
   unsigned int pm1_average = accumulate( v1.begin(), v1.end(), 0.0)/v1.size();
@@ -139,25 +142,25 @@ void readHTData(){
 Scheduler runner;
 
 // CALLBACKS
-void printMicAverage() {
+void printMicAverage(){
   micAverageLoop();
   DMSG("Mic average ");
   DMSG(","); DMSG(amic);
 }
-void printPMAverage() {
+void printPMAverage(){
   pmAverageLoop();
   DMSG("PM 1.0 (ug/m3): ");    DMSGln(apm1);
   DMSG("PM 2.5 (ug/m3): ");    DMSGln(apm25);
   DMSG("PM 10.0 (ug/m3): ");   DMSGln(apm10);
 }
-void readPlantowerData() {
+void readPlantowerData(){
   DMSGln("Leyendo PM ... ");
   if (pms.readUntil(data)) {
     saveDataForAverage(data.PM_AE_UG_2_5, data.PM_AE_UG_10_0, data.PM_AE_UG_1_0);
   }
   else DMSGln("No data.");
 }
-void readMicData() {
+void readMicData(){
   DMSG("Leyendo Mic ... ");
   unsigned long startMillis= millis();  // Start of sample window
   unsigned int peakToPeak = 0;   // peak-to-peak level
@@ -179,9 +182,9 @@ void readMicData() {
         }
     }
   peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
-  saveMicDataForAverage(peakToPeak);
+  saveMicDataForAverage(peakToPeak*0.07447 + 39.82947);
 }
-void sendToInflux() {
+void sendToInflux(){
   micAverageLoop();
   pmAverageLoop();
   char row[256];
@@ -191,18 +194,34 @@ void sendToInflux() {
           "%s,id=%s lat=%s,lng=%s,t=%u,h=%u,pm1=%u,pm25=%u,pm10=%u,s=%u",
           SENSOR_ID,SENSOR_ID,FIXED_LAT,FIXED_LON,t,h,apm1,apm25,apm10,amic
           );
-  Serial.println(row);
+  DMSGln(row);
 
   influx.write(row);
+}
+CRGB setColor(){
+  CRGB alert = CRGB::Black;
+  if(apm25 < 12) alert = CRGB::Green; // CRGB::Green; // Alert.ok
+  if(apm25 >= 12 && apm25 < 35) alert = CRGB::Gold; // Alert.notGood;
+  if(apm25 >= 35 && apm25 < 55) alert = CRGB::OrangeRed; // Alert.bad;
+  if(apm25 >= 55 && apm25 < 150) alert = CRGB::DarkRed; // CRGB::Red; // Alert.dangerous;
+  if(apm25 >= 150 && apm25 < 250) alert = CRGB::Purple; // CRGB::Purple; // Alert.VeryDangerous;
+  if(apm25 >= 250) alert = CRGB::Brown; // Alert.harmful;
+
+  return alert;
+}
+void setLed(){
+  ledToggle = !ledToggle;
+  leds[0] = ledToggle ? setColor() : CRGB::Black;
+  FastLED.show();
 }
 // TASKS
 Task readPlantowerTask(400, TASK_FOREVER, &readPlantowerData);
 Task readMicTask(120, TASK_FOREVER, &readMicData);
 Task getHTTask(15000, TASK_FOREVER, &readHTData);
 Task writeToInflux(15000, TASK_FOREVER, &sendToInflux);
+Task ledBlink(1000, TASK_FOREVER, &setLed);
 
-void setup(){
-  Serial.begin(115200);
+void connectToWifi(){
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   DMSGln("Connecting to WIFI");
   while (WiFi.status() != WL_CONNECTED) {
@@ -213,6 +232,11 @@ void setup(){
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+}
+
+void setup(){
+  Serial.begin(115200);
+  connectToWifi();
   influx.setDb(INFLUXDB_DATABASE);
   LEDS.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   plantower_serial.begin(9600);
@@ -227,11 +251,13 @@ void setup(){
   runner.addTask(readMicTask);
   runner.addTask(getHTTask);
   runner.addTask(writeToInflux);
+  runner.addTask(ledBlink);
   DMSGln("added tasks");
   readPlantowerTask.enable();
   readMicTask.enable();
   getHTTask.enable();
   writeToInflux.enable();
+  ledBlink.enable();
 }
 
 void loop(){
