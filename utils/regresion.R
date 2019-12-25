@@ -18,25 +18,38 @@ rm(list=ls())
 ## 13 -> 80%
 ## 14 -> 90%
 
-mean(c(805,805,805,805,805,805,805,805,805,805,805,805,805,805,805,805,805,805,805,805))
-micAnalogValues <- c(57.83871,150.2549,481.2222,493,496.7333,498.2963,499.2414,499.4583,666.2667,745.8235,804.8276,805)
-meterDbs <- c(32,39.2,53.1,55.5,58.8,66.3,68.8,71.2,77.7,78.5,78.9,79.2)
+mean(c(512,515,516,516,515,511,515,517,518,515,513,515,515,517,513,515,508,513,516,513,515,517,511,519,517,513,517,519,517,516,521,513,515,507))
 
-scatter.smooth(x=meterDbs, y=micAnalogValues, main="Dist ~ Speed")
+micAnalogValues <- c(7.758621,11.40909,25.80556,35.56757,47.35897,60.57895,76.10526,103.1081,138.9167,149,174.8621,228.1034,245.7059,275.4545,309.8095,505.3333,514.8529)
+meterDbs <- c(32.7,37.7,50.8,52.7,55.1,57.5,60.5,63,65.6,67,68.4,71.3,72.1,73,73.4,79.7,83.3)
+
+scatter.smooth(x=meterDbs, y=micAnalogValues, main="DBs ~ ADC")
+plot(x=meterDbs, y=micAnalogValues, main="DBs ~ ADC")
 
 cor(meterDbs, micAnalogValues)
 lm(meterDbs ~ micAnalogValues)
 
-dbs <- 29.71793 + 0.06495*micAnalogValues
+ADC <- micAnalogValues
 
-scatter.smooth(x=dbs, y=meterDbs, main="Dist ~ Speed")
+## Ajustado a ojo
+Dbs <- (ADC)*0.07447 + 39.82947
+
+1/0.07447
+
+scatter.smooth(x=meterDbs, y=dbs, main="DBs ~ ADC")
+plot(1:length(dbs), y=dbs)
 
 ## Call:
 ##     lm(formula = meterDbs ~ micAnalogValues)
 
 ## Coefficients:
 ##     (Intercept)  micAnalogValues  
-## 29.71793          0.06495  
+## 49.82947          0.07447  
+
 
 d <- ## output de consola serial
-plot(d, type =  'l')
+    plot(d, type =  'l')
+
+## https://circuitdigest.com/microcontroller-projects/arduino-sound-level-measurement/
+## ADC = (11.003* dB) – 83.2073
+## (ADC+83.2073) / 11.003
