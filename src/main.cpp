@@ -10,9 +10,9 @@
 #define _TASK_INLINE       // Make all methods "inline" - needed to support some multi-tab, multi-file implementations
 #define _TASK_TIMEOUT           // Support for overall task timeout
 
-#define FIXED_LAT "6.263578"
-#define FIXED_LON "-75.597417"
-#define SENSOR_ID "v80_autollaves"
+#define FIXED_LAT "6.256984"
+#define FIXED_LON "-75.578214"
+#define SENSOR_ID "v80_aprendiedo"
 
 // #define DEBUGGING
 #ifdef  DEBUGGING
@@ -43,8 +43,8 @@ using namespace std;
 #include "DHT.h"
 #include <TaskScheduler.h>
 
-#define WIFI_SSID "WIFI_NAME"
-#define WIFI_PASS "WIFI_PASSWORD"
+#define WIFI_SSID "ssid"
+#define WIFI_PASS "tu clave"
 
 Influxdb influx(INFLUXDB_HOST);
 
@@ -76,7 +76,7 @@ PMS::DATA data;
 #define LED_PIN D1
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
-#define NUM_LEDS 1
+#define NUM_LEDS 2
 CRGB leds[NUM_LEDS];
 int BRIGHTNESS = 10; // this is half brightness
 
@@ -186,20 +186,42 @@ void readMicData(){
   saveMicDataForAverage(peakToPeak*0.07447 + 39.82947);
 }
 CRGB setColor(){
-  CRGB alert = CRGB::Black;
-  if(apm25 < 12) alert = CRGB::Green; // CRGB::Green; // Alert.ok
-  if(apm25 >= 12 && apm25 < 35) alert = CRGB::Gold; // Alert.notGood;
-  if(apm25 >= 35 && apm25 < 55) alert = CRGB::Tomato; // Alert.bad;
-  if(apm25 >= 55 && apm25 < 150) alert = CRGB::DarkRed; // CRGB::Red; // Alert.dangerous;
-  if(apm25 >= 150 && apm25 < 250) alert = CRGB::Purple; // CRGB::Purple; // Alert.VeryDangerous;
-  if(apm25 >= 250) alert = CRGB::Brown; // Alert.harmful;
-
+  CRGB alert = CRGB::Black;  
+  if(apm25 < 12){
+     //if(apm25 < 12) alert = CRGB::Green; // CRGB::Green; // Alert.ok
+      int color=255*apm25/12;
+       alert = CRGB(0,color,0);
+   }
+  if(apm25 >= 12 && apm25 < 35) {
+      //if(apm25 >= 12 && apm25 < 35) alert = CRGB::Gold; // Alert.notGood;
+      int color=255*apm25/35;
+       alert = CRGB(255,color,0);
+    }
+  if(apm25 >= 35 && apm25 < 55) {
+      //if(apm25 >= 35 && apm25 < 55) alert = CRGB::Tomato; // Alert.bad;
+      int color=150*apm25/55;
+       alert = CRGB(255,color,0);
+    }
+  if(apm25 >= 55 && apm25 < 75) {
+      //if(apm25 >= 55 && apm25 < 150) alert = CRGB::DarkRed; // CRGB::Red; // Alert.dangerous;
+      int color=255*apm25/75;
+       alert = CRGB(color,0,0);
+  }
+  if(apm25 >= 75 && apm25 < 255)  {
+      //if(apm25 >= 150 && apm25 < 255) alert = CRGB::Purple; // CRGB::Purple; // Alert.VeryDangerous;
+      int color=180*apm25/255;
+      alert = CRGB(175,0,color);
+  }
+  if(apm25 >= 255) alert = CRGB::Brown; // Alert.harmful;
   return alert;
+
 }
 void setLed(){
   ledToggle = !ledToggle;
-  leds[0] = ledToggle ? setColor() : CRGB::Black;
-  FastLED.show();
+    for(int i=0; i < 4; i++) {
+    for(int j=0; j < NUM_LEDS; j++) leds[j] = ledToggle ? setColor() : CRGB::Black;
+      FastLED.show();
+  }
 }
 // TASKS
 Task readPlantowerTask(400, TASK_FOREVER, &readPlantowerData);
