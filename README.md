@@ -3,14 +3,6 @@ Cuando se desea profundizar en el problema de la calidad del aire en Medellín n
 El Kit AQA se esfuerza por acercar al ciudadano a la posibilidad de medir y analizar el aire que respira. De hecho, en las actividades propuestas se aprende a ensamblar un dispositivo para la medición del materialparticulado, y se considera unas herramientas para el estudio de las mediciones.
 Es en los detalles del ensamblaje y el uso de las herramientas de análisis donde se puede pensar con las manos y entrar en relación directa con el problema de la calidad del aire.
 
-## Instalación
-
-descargar repositorio
-
-          git clone https://github.com/jero98772/aqav80.git
-
-https://comunidad.unloquer.org/t/como-programar-el-aqa/33
-
 
 ## Enlaces
   * [Ejemplo de la trama de datos](https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv) https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv
@@ -50,6 +42,12 @@ color > 13 resultado genrlamente verde
 color < 255 marron
 
 ## ¿Como lo instalo? 
+
+Descarga el repositorio
+
+          git clone https://github.com/jero98772/aqav80.git
+
+https://comunidad.unloquer.org/t/como-programar-el-aqa/33
 
 Usando Visual Studio Code, aka Code en sistemas GNU/Linux. Es tan facil como instalar Platformio y asegurarse que en el archivo platformio.ini se nombre el dispositivo que queremos flashear:  upload_port = /dev/ttyUSB0  
 
