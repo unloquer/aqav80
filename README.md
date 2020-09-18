@@ -47,11 +47,12 @@ Descarga el repositorio
 
           git clone https://github.com/jero98772/aqav80.git
 
-https://comunidad.unloquer.org/t/como-programar-el-aqa/33
 
 Usando Visual Studio Code, aka Code en sistemas GNU/Linux. Es tan facil como instalar Platformio y asegurarse que en el archivo platformio.ini se nombre el dispositivo que queremos flashear:  upload_port = /dev/ttyUSB0  
 
-En el archivo main.ccp se deben cambiar los valores para ubicacion y datos de la red que se utilizara para enviar los datos capturados, por ejemplo:
+Lea aqui: https://comunidad.unloquer.org/t/como-programar-el-aqa/33/7
+
+En el archivo main.ccp se deben cambiar los valores para ubicacion y datos de la red que se utilizara para enviar los datos capturados, entre los cuales estan, por ejemplo estos:
 
 #define FIXED_LAT "6.167222"  
 #define FIXED_LON "-75.426667"  
