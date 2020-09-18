@@ -12,8 +12,6 @@ descargar repositorio
 https://comunidad.unloquer.org/t/como-programar-el-aqa/33
 
 
-
-
 ## Enlaces
   * [Ejemplo de la trama de datos](https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv) https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv
   * [Foro](https://comunidad.unloquer.org/) comunidad unloquer  https://comunidad.unloquer.org/
@@ -21,7 +19,20 @@ https://comunidad.unloquer.org/t/como-programar-el-aqa/33
   * [mapa de mediciones](http://daquina.io/aqaviz/) daquia.io http://daquina.io/aqaviz/
   * [Licensed under the TAPR Open Hardware License](www.tapr.org/OHL): www.tapr.org/OHL
 
-## Como leer los colores
+
+## ¿De donde vienen los datos? -> de estos sensores: 
+
+ * dht11 --> temperatura y humedad 
+ * plantower --> material particulado
+ * max9814 --> ruido
+
+## ¿Hacia donde salen los datos?
+
+  * [mapa de mediciones](http://daquina.io/aqaviz/) daquia.io http://daquina.io/aqaviz/
+  * [los dash board](http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer) chronograf http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer
+  en la parte de  v80.autogen
+
+## ¿Como comprender el codigo de colores de los LEDs?
 el color gradiente de los leds funciona mientras mas intenso el color mas contaminacion  y menos inteso el color  menos contaminacion
 
 el color gradiente de los leds funciona mientras mas intenso el color mas contaminacion y menos inteso el color menos contaminacion 
@@ -38,33 +49,20 @@ color > 13 resultado genrlamente verde
 
 color < 255 marron
 
-## ¿De donde vienen los datos? -> de estos sensores: 
-
- * dht11 --> temperatura y humedad 
- * plantower --> material particulado
- * max9814 --> ruido
-
-## ¿Hacia donde salen los datos?
-
-  * [mapa de mediciones](http://daquina.io/aqaviz/) daquia.io http://daquina.io/aqaviz/
-  * [los dash board](http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer) chronograf http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer
-  en la parte de  v80.autogen
-
-
 ## ¿Como lo instalo? 
 
 Usando Visual Studio Code, aka Code en sistemas GNU/Linux. Es tan facil como instalar Platformio y asegurarse que en el archivo platformio.ini se nombre el dispositivo que queremos flashear:  upload_port = /dev/ttyUSB0  
 
 En el archivo main.ccp se deben cambiar los valores para ubicacion y datos de la red que se utilizara para enviar los datos capturados, por ejemplo:
 
-#define FIXED_LAT "6.167222"
-#define FIXED_LON "-75.426667"
-#define SENSOR_ID "Rionegro"
+#define FIXED_LAT "6.167222"  
+#define FIXED_LON "-75.426667"  
+#define SENSOR_ID "Rionegro"  
 
 y, mas abajo en el mismo archivo:
 
-#define WIFI_SSID "ESSID/Nombre de la red"
-#define WIFI_PASS "PASSWORD/Clave de la red"
+#define WIFI_SSID "ESSID/Nombre de la red"  
+#define WIFI_PASS "PASSWORD/Clave de la red"  
 
 Para otras maneras de instalarlo lea aqui:  
 [enlace a como instalarlo en comunidad unloquer](https://comunidad.unloquer.org/t/cargar-el-firmware-desde-linea-de-comando/118) 
