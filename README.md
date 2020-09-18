@@ -69,5 +69,5 @@ Para otras maneras de instalarlo lea aqui:
 
 ## Contacto 
 
- * irc --> #un/loquer
+ * irc --> #un/loquer en irc.freenode.net
  * twitter --> [twitter de unloquer](https://twitter.com/unloquer?lang=es) enlace a https://twitter.com/unloquer?lang=es
