@@ -75,8 +75,8 @@ using namespace std;
 #include <TaskScheduler.h>
 
 #ifdef INTERNET
-#define WIFI_SSID "PCES"
-#define WIFI_PASS "42891185_ellen"
+#define WIFI_SSID "ssid"
+#define WIFI_PASS "pwd"
 Influxdb influx(INFLUXDB_HOST);
 #endif
 

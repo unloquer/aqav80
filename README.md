@@ -51,7 +51,7 @@ Usando Visual Studio Code, aka Code en sistemas GNU/Linux. Es tan facil como ins
 
 Lea aqui: https://comunidad.unloquer.org/t/como-programar-el-aqa/33/7
 
-En el archivo main.ccp se deben cambiar los valores para ubicacion y datos de la red que se utilizara para enviar los datos capturados, entre los cuales estan, por ejemplo estos:
+En el archivo main.cpp se deben cambiar los valores para ubicacion y datos de la red que se utilizara para enviar los datos capturados, entre los cuales estan, por ejemplo estos:
 
 #define FIXED_LAT "6.167222"  
 #define FIXED_LON "-75.426667"  
@@ -63,8 +63,16 @@ y, mas abajo en el mismo archivo:
 #define WIFI_SSID "ESSID/Nombre de la red"  
 #define WIFI_PASS "PASSWORD/Clave de la red"  
 
-Para otras maneras de instalarlo lea aqui:  
+Para otras maneras de instalarlo lea aqui: 
 [enlace a como instalarlo en comunidad unloquer](https://comunidad.unloquer.org/t/cargar-el-firmware-desde-linea-de-comando/118) 
+
+#### un breve resumen paso a paso
+
+1. configurar el sensor en el archivo scr/main.cpp , recuerde guardar cambios
+2. $ pio run  ,para compilar  el codigo con las nuevas configuraciones . recurde instalar [platformio](https://pypi.org/project/platformio/)
+3. $ esptool.py --port /dev/ttyUSB0  write_flash 0x00000 .pio/build/d1_mini/firmware.bin ,el puerto no siempre es /dev/ttyUSB0 , recuerde instalar [esptool](https://pypi.org/project/esptool/)
+
+mas informacion [aqui](https://comunidad.unloquer.org)
 
 ## como puedo especificar los modulos y modos que voy a usar?
 puedes especificar que vas a usar dentro de estas macros
