@@ -11,9 +11,6 @@ descargar repositorio
 
 https://comunidad.unloquer.org/t/como-programar-el-aqa/33
 
-
-
-
 ## Enlaces
   * [Ejemplo de la trama de datos](https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv) https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv
   * [Foro](https://comunidad.unloquer.org/) comunidad unloquer  https://comunidad.unloquer.org/
@@ -50,6 +47,38 @@ color < 255 marron
  * plantower --> material particulado
  * max9814 --> ruido
 
+## como puedo especificar los modulos y modos que voy a usar?
+puedes especificar que vas a usar dentro de estas macros
+
+	#define SENSOR_ID "aprendiedo"
+	#define INTERNET
+	#define DHT_SENSOR
+	#define MIC
+	#define APP
+	#define GPS
+	#define MAP
+	#define LED
+	#define LED_CODE
+	#define DEBUGGING
+
+cuando espcificas el puede ser mas eficiente que otros por que se hace un binario decuerdo a lo que nesesitas 
+
+es diferente a no usar algunas funciones que estan consumiedo recursos en la memoria
+
+espesificando con macros no se compilan esas funciones entonces no van haber problemas de funciones en desuso consumiedo recursos 
+
+especificando el tipo de sesnor "aqav80" seria :
+ 
+	#define SENSOR_ID "v80_aprendiedo"
+	#define INTERNET
+	#define DHT_SENSOR
+	#define MIC
+	//#define APP
+	//#define GPS
+	//#define MAP
+	#define LED
+	//#define LED_CODE
+	//#define DEBUGGING
 
 ## como lo instalo 
 
