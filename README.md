@@ -3,14 +3,6 @@ Cuando se desea profundizar en el problema de la calidad del aire en Medellín n
 El Kit AQA se esfuerza por acercar al ciudadano a la posibilidad de medir y analizar el aire que respira. De hecho, en las actividades propuestas se aprende a ensamblar un dispositivo para la medición del materialparticulado, y se considera unas herramientas para el estudio de las mediciones.
 Es en los detalles del ensamblaje y el uso de las herramientas de análisis donde se puede pensar con las manos y entrar en relación directa con el problema de la calidad del aire.
 
-## Instalación
-
-descargar repositorio
-
-          git clone https://github.com/jero98772/aqav80.git
-
-https://comunidad.unloquer.org/t/como-programar-el-aqa/33
-
 ## Enlaces
   * [Ejemplo de la trama de datos](https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv) https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv
   * [Foro](https://comunidad.unloquer.org/) comunidad unloquer  https://comunidad.unloquer.org/
@@ -18,7 +10,20 @@ https://comunidad.unloquer.org/t/como-programar-el-aqa/33
   * [mapa de mediciones](http://daquina.io/aqaviz/) daquia.io http://daquina.io/aqaviz/
   * [Licensed under the TAPR Open Hardware License](www.tapr.org/OHL): www.tapr.org/OHL
 
-## Como leer los colores
+
+## ¿De donde vienen los datos? -> de estos sensores: 
+
+ * dht11 --> temperatura y humedad 
+ * plantower --> material particulado
+ * max9814 --> ruido
+
+## ¿Hacia donde salen los datos?
+
+  * [mapa de mediciones](http://daquina.io/aqaviz/) daquia.io http://daquina.io/aqaviz/
+  * [los dash board](http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer) chronograf http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer
+  en la parte de  v80.autogen
+
+## ¿Como comprender el codigo de colores de los LEDs?
 el color gradiente de los leds funciona mientras mas intenso el color mas contaminacion  y menos inteso el color  menos contaminacion
 
 el color gradiente de los leds funciona mientras mas intenso el color mas contaminacion y menos inteso el color menos contaminacion 
@@ -35,17 +40,31 @@ color > 13 resultado genrlamente verde
 
 color < 255 marron
 
-## para donde van los datos
+## ¿Como lo instalo? 
 
-  * [mapa de mediciones](http://daquina.io/aqaviz/) daquia.io http://daquina.io/aqaviz/
-  * [los dash board](http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer) chronograf http://aqa.unloquer.org:8888/sources/2/chronograf/data-explorer
-  en la parte de  v80.autogen
+Descarga el repositorio
 
-## de donde vienen los datos de de difentes sensores como 
+          git clone https://github.com/jero98772/aqav80.git
 
- * dht11 --> temperatura y humedad 
- * plantower --> material particulado
- * max9814 --> ruido
+
+Usando Visual Studio Code, aka Code en sistemas GNU/Linux. Es tan facil como instalar Platformio y asegurarse que en el archivo platformio.ini se nombre el dispositivo que queremos flashear:  upload_port = /dev/ttyUSB0  
+
+Lea aqui: https://comunidad.unloquer.org/t/como-programar-el-aqa/33/7
+
+En el archivo main.ccp se deben cambiar los valores para ubicacion y datos de la red que se utilizara para enviar los datos capturados, entre los cuales estan, por ejemplo estos:
+
+#define FIXED_LAT "6.167222"  
+#define FIXED_LON "-75.426667"  
+#define SENSOR_ID "Rionegro"  
+
+y, mas abajo en el mismo archivo:
+
+
+#define WIFI_SSID "ESSID/Nombre de la red"  
+#define WIFI_PASS "PASSWORD/Clave de la red"  
+
+Para otras maneras de instalarlo lea aqui:  
+[enlace a como instalarlo en comunidad unloquer](https://comunidad.unloquer.org/t/cargar-el-firmware-desde-linea-de-comando/118) 
 
 ## como puedo especificar los modulos y modos que voy a usar?
 puedes especificar que vas a usar dentro de estas macros
@@ -80,11 +99,8 @@ especificando el tipo de sesnor "aqav80" seria :
 	//#define LED_CODE
 	//#define DEBUGGING
 
-## como lo instalo 
 
-[enlace a como instalarlo en comunidad unloquer](https://comunidad.unloquer.org/t/cargar-el-firmware-desde-linea-de-comando/118) 
+## Contacto 
 
-## contacto 
-
- * irc --> #un/loquer
+ * irc --> #un/loquer en irc.freenode.net
  * twitter --> [twitter de unloquer](https://twitter.com/unloquer?lang=es) enlace a https://twitter.com/unloquer?lang=es
