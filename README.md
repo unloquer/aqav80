@@ -3,7 +3,6 @@ Cuando se desea profundizar en el problema de la calidad del aire en Medellín n
 El Kit AQA se esfuerza por acercar al ciudadano a la posibilidad de medir y analizar el aire que respira. De hecho, en las actividades propuestas se aprende a ensamblar un dispositivo para la medición del materialparticulado, y se considera unas herramientas para el estudio de las mediciones.
 Es en los detalles del ensamblaje y el uso de las herramientas de análisis donde se puede pensar con las manos y entrar en relación directa con el problema de la calidad del aire.
 
-
 ## Enlaces
   * [Ejemplo de la trama de datos](https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv) https://raw.githubusercontent.com/daquina-io/VizCalidadAire/master/data/points.csv
   * [Foro](https://comunidad.unloquer.org/) comunidad unloquer  https://comunidad.unloquer.org/
@@ -60,11 +59,46 @@ En el archivo main.ccp se deben cambiar los valores para ubicacion y datos de la
 
 y, mas abajo en el mismo archivo:
 
+
 #define WIFI_SSID "ESSID/Nombre de la red"  
 #define WIFI_PASS "PASSWORD/Clave de la red"  
 
 Para otras maneras de instalarlo lea aqui:  
 [enlace a como instalarlo en comunidad unloquer](https://comunidad.unloquer.org/t/cargar-el-firmware-desde-linea-de-comando/118) 
+
+## como puedo especificar los modulos y modos que voy a usar?
+puedes especificar que vas a usar dentro de estas macros
+
+	#define SENSOR_ID "aprendiedo"
+	#define INTERNET
+	#define DHT_SENSOR
+	#define MIC
+	#define APP
+	#define GPS
+	#define MAP
+	#define LED
+	#define LED_CODE
+	#define DEBUGGING
+
+cuando espcificas el puede ser mas eficiente que otros por que se hace un binario decuerdo a lo que nesesitas 
+
+es diferente a no usar algunas funciones que estan consumiedo recursos en la memoria
+
+espesificando con macros no se compilan esas funciones entonces no van haber problemas de funciones en desuso consumiedo recursos 
+
+especificando el tipo de sesnor "aqav80" seria :
+ 
+	#define SENSOR_ID "v80_aprendiedo"
+	#define INTERNET
+	#define DHT_SENSOR
+	#define MIC
+	//#define APP
+	//#define GPS
+	//#define MAP
+	#define LED
+	//#define LED_CODE
+	//#define DEBUGGING
+
 
 ## Contacto 
 
