@@ -12,15 +12,17 @@
 
 #define SENSOR_ID "v80_aprendiedo"
 
+#define DEBUGGING
 #define INTERNET
 #define DHT_SENSOR
 #define MIC
-#define APP
-#define GPS
-#define MAP
 #define LED
+#define APP
 #define LED_CODE
-#define DEBUGGING
+//#define GPS
+//#define MAP //to do code
+//#define WIFI_MANAGER //to do code
+//#define MOBILE //to do code
 
 #if(defined INTERNET || defined MAP)
 #define FIXED_LAT "6.256984"
@@ -45,11 +47,10 @@
 #define DEBUGGING
 #endif
 
-
 #ifdef INTERNET 
 #define INFLUXDB_HOST "aqa.unloquer.org"
-// #define INFLUXDB_PORT "8086"
 #define INFLUXDB_DATABASE "v80"
+// #define INFLUXDB_PORT "8086"
 //if used with authentication
 // #define INFLUXDB_USER "user"
 // #define INFLUXDB_PASS "password"
@@ -68,9 +69,16 @@ using namespace std;
 #include "DHT.h"
 #endif
 
+#ifdef LED
+#include <FastLED.h>
+#endif
+
+#ifdef GPS
+#include <TinyGPS.h>
+#endif
+
 #include <SoftwareSerial.h>
 #include <PMS.h>
-#include <FastLED.h>
 #include <vector>
 #include <TaskScheduler.h>
 
@@ -114,6 +122,9 @@ PMS::DATA data;
 #define NUM_LEDS 64
 CRGB leds[NUM_LEDS];
 int BRIGHTNESS = 10; // this is half brightness
+#ifdef LED_CODE
+#define DELAYTIME 150
+#endif
 #endif
 // DHT
 #ifdef DHT_SENSOR
@@ -135,7 +146,6 @@ void saveDataForAverage(unsigned short int pm25, unsigned short int pm10, unsign
 void saveMicDataForAverage(unsigned int mic){
   vmic.push_back(mic);
   // Serial.print(","); Serial.print(mic);
-  //try use only needed space in memory , int or short int  ?
 }
 #endif
 unsigned short int getPM1Average(){
@@ -199,9 +209,9 @@ void printMicAverage(){
 }
 void printPMAverage(){
   pmAverageLoop();
-  DMSG("PM 1.0 (ug/m3): ");    DMSGln(apm1);
-  DMSG("PM 2.5 (ug/m3): ");    DMSGln(apm25);
-  DMSG("PM 10.0 (ug/m3): ");   DMSGln(apm10);
+  DMSG("PM1.0 (ug/m3): ");    DMSGln(apm1);
+  DMSG("PM2.5 (ug/m3): ");    DMSGln(apm25);
+  DMSG("PM10.0 (ug/m3): ");   DMSGln(apm10);
 }
 #endif
 #ifdef APP
@@ -249,9 +259,9 @@ void readMicData(){
 }
 #endif
 #ifdef LED
-CRGB setColor(){
+#ifdef LED_CODE
+CRGB setColor() {
   CRGB alert = CRGB::Black;
-  #ifdef LED_CODE
   if(apm25 < 12){
       int color=255*apm25/12;
       alert = CRGB(0,color,0);
@@ -272,17 +282,26 @@ CRGB setColor(){
       int color=180*apm25/255;
       alert = CRGB(175,0,color);
   }
-  #else
+  if(apm25 >= 255) alert = CRGB::Brown; // Alert.harmful;
+  return alert;
+  FastLED.setBrightness(millis() % 255);
+  FastLED.delay(10);
+  FastLED.show();
+  FastLED.delay(DELAYTIME);
+}
+#else
+CRGB setColor(){
+  CRGB alert = CRGB::Black;
   if(apm25 < 12) alert = CRGB::Green; // CRGB::Green; // Alert.ok
   if(apm25 >= 12 && apm25 < 35) alert = CRGB::Gold; // Alert.notGood;
   if(apm25 >= 35 && apm25 < 55) alert = CRGB::Tomato; // Alert.bad;
   if(apm25 >= 55 && apm25 < 150) alert = CRGB::DarkRed; // CRGB::Red; // Alert.dangerous;
   if(apm25 >= 150 && apm25 < 255) alert = CRGB::Purple; // CRGB::Purple; // Alert.VeryDangerous;
-  #endif
   if(apm25 >= 255) alert = CRGB::Brown; // Alert.harmful;
   return alert;
 
 }
+#endif
 void setLed(){
   ledToggle = !ledToggle;
     for(int i=0; i < 4; i++) {
@@ -291,6 +310,8 @@ void setLed(){
   }
 }
 #endif
+
+
 // TASKS
 Task readPlantowerTask(400, TASK_FOREVER, &readPlantowerData);
 #ifdef MIC
@@ -341,7 +362,11 @@ void connectToWifi(){
 }
 #endif
 void setup(){
+  #ifdef APP
+  Serial.begin(9600);
+  #else
   Serial.begin(115200);
+  #endif
   #ifdef INTERNET
   connectToWifi();
   influx.setDb(INFLUXDB_DATABASE);
