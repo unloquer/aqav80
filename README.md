@@ -42,9 +42,9 @@ color < 255 marron
 
 ## ¿Como lo instalo? 
 
-Descarga el repositorio
+Descarga el repositorio con este branch
 
-          git clone https://github.com/jero98772/aqav80.git
+	git clone -b AQAV80_modular https://github.com/unloquer/aqav80.git
 
 
 Usando Visual Studio Code, aka Code en sistemas GNU/Linux. Es tan facil como instalar Platformio y asegurarse que en el archivo platformio.ini se nombre el dispositivo que queremos flashear:  upload_port = /dev/ttyUSB0  

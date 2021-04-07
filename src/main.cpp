@@ -55,8 +55,6 @@
 // #define INFLUXDB_PASS "password"
 #endif
 
-
-using namespace std;
 #include <Arduino.h>
 
 #ifdef INTERNET
@@ -73,6 +71,8 @@ using namespace std;
 #include <FastLED.h>
 #include <vector>
 #include <TaskScheduler.h>
+
+using std::vector;
 
 #ifdef INTERNET
 #define WIFI_SSID "ssid"
@@ -341,7 +341,11 @@ void connectToWifi(){
 }
 #endif
 void setup(){
+  #ifdef APP
+  Serial.begin(9600);
+  #else
   Serial.begin(115200);
+  #endif
   #ifdef INTERNET
   connectToWifi();
   influx.setDb(INFLUXDB_DATABASE);
